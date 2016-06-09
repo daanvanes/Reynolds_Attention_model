@@ -41,10 +41,10 @@ stim = stim1 + stim2
 #   Atheta=Atheta,AthetaWidth=AthetaWidth,
 #   showActivityMaps=1,showModelParameters=1)
 # # Attending stim 1 and orientation, cross
-R4 = NMA.attention_model(x,theta,stim,Ashape='cross',
-  Ax=stimCenter1,AxWidth=AxWidth,
-  Atheta=Atheta,AthetaWidth=AthetaWidth,
-  showActivityMaps=1,showModelParameters=1)
+# R4 = NMA.attention_model(x,theta,stim,Ashape='cross',
+#   Ax=stimCenter1,AxWidth=AxWidth,
+#   Atheta=Atheta,AthetaWidth=AthetaWidth,
+#   showActivityMaps=1,showModelParameters=1)
 
 
 

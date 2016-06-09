@@ -7,7 +7,7 @@ Copyright (c) 2016 DE. All rights reserved.
 """
 
 import numpy as np
-from scipy import ndimage
+from scipy import ndimage, stats
 import matplotlib.pyplot as plt
 from IPython import embed as shell
 import seaborn as sn
@@ -24,14 +24,13 @@ class NormalizationModelofAttention(object):
 		if not np.isnan(heigth):
 			kernel = heigth*np.exp(-np.power(np.array(space) - center, 2.) / (2 * np.power(width, 2.)))
 		else:
-			kernel = np.exp(-np.power(np.array(space) - center, 2.) / (2 * np.power(width, 2.)))
-			kernel /= np.sum(kernel)
+			kernel = stats.norm.pdf(space,center,width)
 		return kernel
 
 	def conv_2_sep_Y_circ(self,image,xkernel,thetakernel):#,upsample=10):
 		# up_image = np.repeat(image,upsample)
-		x_convolved = ndimage.convolve1d(image,xkernel,mode='constant',axis=1)
-		both_convolved = ndimage.convolve1d(x_convolved,thetakernel,mode='wrap',axis=0)
+		x_convolved = ndimage.convolve1d(image,xkernel,mode='wrap',axis=1)
+		both_convolved = ndimage.convolve1d(x_convolved,thetakernel,mode='constant',axis=0)
 		return both_convolved
 
 	def attention_model(self,x,theta,stimulus,ExWidth = 5,EthetaWidth = 60,IxWidth = 20,
@@ -125,7 +124,7 @@ class NormalizationModelofAttention(object):
 		Rmax = np.max(R)
 
 		if showModelParameters == 1:
-			f=plt.figure(figsize=(9,9))
+			f=plt.figure(figsize=(7,7))
 			s=f.add_subplot(221)
 			plt.plot(np.ravel(x),np.ravel(ExKernel),label='ExKernel')
 			plt.plot(np.ravel(x),-np.ravel(IxKernel),label='IxKernel')
@@ -147,7 +146,7 @@ class NormalizationModelofAttention(object):
 			plt.tight_layout()
 
 		if showActivityMaps == 1:
-			f = plt.figure(figsize=(9,12))
+			f = plt.figure(figsize=(7,7))
 			s = f.add_subplot(321)
 			plt.imshow(stimulus,interpolation='nearest',cmap='gray',clim=[0,1])
 			plt.xlabel('Space')
