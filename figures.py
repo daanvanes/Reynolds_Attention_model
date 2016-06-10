@@ -13,34 +13,36 @@ from IPython import embed as shell
 import seaborn as sn
 sn.set_style('ticks')
 from NormalizationModelofAttention import *
+import os
 
 class Figures(object):
 
-	def __init__(self,):
+	def __init__(self,plotdir,res):
 
-		self.numContrasts = 25
-		self.numOrientations = 25
+		self.numContrasts = res
+		self.numOrientations = res
+		# Sampling of space and orientation
+		self.x =  np.mat(np.arange(-200,201))
+		self.theta = np.mat(np.arange(-180,181)).T
+		self.plotdir = plotdir
 
 	def Figure2A(self,):
 
-		NMA = NormalizationModelofAttention()
+		print 'creating Figure 2A'
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 2A: large att, small stim'
 		stimWidth = 3 
 		AxWidth = 30
 		cRange = [1e-5, 1]
 
-		# Sampling of space and orientation
-		x =  np.mat(np.arange(-200,201))
-		theta = np.mat(np.arange(-180,181)).T
-
 		# Make stimuli
 		stimCenter1 = 100
 		stimOrientation1 = 0
 		stimCenter2 = -100
 		stimOrientation2 = 0
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1) 
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1) 
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Pick contrasts
 		logCRange = np.log10(cRange)
@@ -48,24 +50,24 @@ class Figures(object):
 		contrasts = 10**logContrasts
 
 		# Pick neuron to record
-		j = np.where(np.ravel(theta)==stimOrientation1)[0][0]
-		i = np.where(np.ravel(x)==stimCenter1)[0][0]
+		j = np.where(np.ravel(self.theta)==stimOrientation1)[0][0]
+		i = np.where(np.ravel(self.x)==stimCenter1)[0][0]
 
 		attCRF = np.zeros(np.size(contrasts))
 		unattCRF = np.zeros(np.size(contrasts))
 		for c in range(0,self.numContrasts):
 			stim = contrasts[c] * stim1 + contrasts[c] * stim2
-			if c == (self.numContrasts-1):
-				showActivityMaps = 1
-				showModelParameters = 1
-			else:
-				showActivityMaps = 0
-				showModelParameters = 0
+			# if c == (self.numContrasts-1):
+			# 	showActivityMaps = 1
+			# 	showModelParameters = 1
+			# else:
+			# 	showActivityMaps = 0
+			# 	showModelParameters = 0
 			# Population response when attending stim 1
-			R1 = NMA.attention_model(x,theta,stim,Ax=stimCenter1,AxWidth=AxWidth,
-				showActivityMaps=showActivityMaps,showModelParameters=showModelParameters)
+			R1 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter1,AxWidth=AxWidth)
+				# showActivityMaps=showActivityMaps,showModelParameters=showModelParameters)
 			# Population response when attending stim 2
-			R2 = NMA.attention_model(x,theta,stim,Ax=stimCenter2,AxWidth=AxWidth)
+			R2 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter2,AxWidth=AxWidth)
 			attCRF[c] = R1[j,i]
 			unattCRF[c] = R2[j,i]
 
@@ -90,11 +92,13 @@ class Figures(object):
 		plt.xlabel('Log contrast')
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figure2A.pdf'))
+		plt.close()
 
 	def Figure2B(self,):
+		print 'creating Figure 2B'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 2B: small att, large stim'
 		stimWidth = 5 
@@ -110,8 +114,8 @@ class Figures(object):
 		stimOrientation1 = 0
 		stimCenter2 = -100
 		stimOrientation2 = 0
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1) 
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1) 
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Pick contrasts
 		logCRange = np.log10(cRange)
@@ -119,8 +123,8 @@ class Figures(object):
 		contrasts = 10**logContrasts
 
 		# Pick neuron to record
-		j = np.where(np.ravel(theta)==stimOrientation1)[0][0]
-		i = np.where(np.ravel(x)==stimCenter1)[0][0]
+		j = np.where(np.ravel(self.theta)==stimOrientation1)[0][0]
+		i = np.where(np.ravel(self.x)==stimCenter1)[0][0]
 
 		attCRF = np.zeros(np.size(contrasts))
 		unattCRF = np.zeros(np.size(contrasts))
@@ -128,9 +132,9 @@ class Figures(object):
 		for c in range(0,self.numContrasts):
 			stim = contrasts[c] * stim1 + contrasts[c] * stim2
 			# Population response when attending stim 1
-			R1 = NMA.attention_model(x,theta,stim,Ax=stimCenter1,AxWidth=AxWidth)
+			R1 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter1,AxWidth=AxWidth)
 			# Population response when attending stim 2
-			R2 = NMA.attention_model(x,theta,stim,Ax=stimCenter2,AxWidth=AxWidth)
+			R2 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter2,AxWidth=AxWidth)
 			attCRF[c] = R1[j,i]
 			unattCRF[c] = R2[j,i]
 
@@ -155,11 +159,13 @@ class Figures(object):
 		plt.xlabel('Log contrast')
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figure2B.pdf'))
+		plt.close()
 
 	def Figure3C(self,):
+		print 'creating Figure 3C'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 3C (Reynolds, Pasternak & Desimone, 2000)'
 		stimWidth = 5 
@@ -177,8 +183,8 @@ class Figures(object):
 		stimOrientation1 = 0
 		stimCenter2 = -100
 		stimOrientation2 = 0
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1) 
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1) 
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Pick contrasts
 		logCRange = np.log10(cRange)
@@ -186,8 +192,8 @@ class Figures(object):
 		contrasts = 10**logContrasts
 
 		# Pick neuron to record
-		j = np.where(np.ravel(theta)==stimOrientation1)[0][0]
-		i = np.where(np.ravel(x)==stimCenter1)[0][0]
+		j = np.where(np.ravel(self.theta)==stimOrientation1)[0][0]
+		i = np.where(np.ravel(self.x)==stimCenter1)[0][0]
 
 		attCRF = np.zeros(np.size(contrasts))
 		unattCRF = np.zeros(np.size(contrasts))
@@ -195,10 +201,10 @@ class Figures(object):
 		for c in range(0,self.numContrasts):
 			stim = contrasts[c] * stim1 + contrasts[c] * stim2
 			# Population response when attending stim 1
-			R1 = NMA.attention_model(x,theta,stim,Ax=stimCenter1,AxWidth=AxWidth,
+			R1 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter1,AxWidth=AxWidth,
 				baselineMod=baselineMod,baselineUnmod=baselineUnmod)
 			# Population response when attending stim 2
-			R2 = NMA.attention_model(x,theta,stim,Ax=stimCenter2,AxWidth=AxWidth,
+			R2 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter2,AxWidth=AxWidth,
 				baselineMod=baselineMod,baselineUnmod=baselineUnmod)
 			attCRF[c] = R1[j,i]
 			unattCRF[c] = R2[j,i]
@@ -224,11 +230,13 @@ class Figures(object):
 		plt.xlabel('Log contrast')
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figure3C.pdf'))
+		plt.close()
 
 	def Figure3F(self,):
+		print 'creating Figure 3F'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 3F (Williford & Maunsell, 2007)'
 		stimWidth = 7 
@@ -246,8 +254,8 @@ class Figures(object):
 		stimOrientation1 = 0
 		stimCenter2 = -100
 		stimOrientation2 = 0
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1) 
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1) 
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Pick contrasts
 		logCRange = np.log10(cRange)
@@ -255,8 +263,8 @@ class Figures(object):
 		contrasts = 10**logContrasts
 
 		# Pick neuron to record
-		j = np.where(np.ravel(theta)==stimOrientation1)[0][0]
-		i = np.where(np.ravel(x)==stimCenter1)[0][0]
+		j = np.where(np.ravel(self.theta)==stimOrientation1)[0][0]
+		i = np.where(np.ravel(self.x)==stimCenter1)[0][0]
 
 		attCRF = np.zeros(np.size(contrasts))
 		unattCRF = np.zeros(np.size(contrasts))
@@ -264,10 +272,10 @@ class Figures(object):
 		for c in range(0,self.numContrasts):
 			stim = contrasts[c] * stim1 + contrasts[c] * stim2
 			# Population response when attending stim 1
-			R1 = NMA.attention_model(x,theta,stim,Ax=stimCenter1,AxWidth=AxWidth,
+			R1 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter1,AxWidth=AxWidth,
 				baselineMod=baselineMod,baselineUnmod=baselineUnmod)
 			# Population response when attending stim 2
-			R2 = NMA.attention_model(x,theta,stim,Ax=stimCenter2,AxWidth=AxWidth,
+			R2 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter2,AxWidth=AxWidth,
 				baselineMod=baselineMod,baselineUnmod=baselineUnmod)
 			attCRF[c] = R1[j,i]
 			unattCRF[c] = R2[j,i]
@@ -293,11 +301,13 @@ class Figures(object):
 		plt.xlabel('Log contrast')
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figure3F.pdf'))
+		plt.close()
 
 	def Figure4C(self,):
+		print 'creating Figure 4C'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 4C (Martinez-Trujillo & Treue, 2002)'
 		stimWidth = 5 
@@ -328,12 +338,12 @@ class Figures(object):
 		RF_center = round(np.mean([stimCenter1, stimCenter2]))
 
 		# Stim 1 and 2 in RF
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1)
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1)
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Stim 3 and 4 contralateral to RF
-		stim3 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter3,stimWidth,1)
-		stim4 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter4,stimWidth,1)
+		stim3 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter3,stimWidth,1)
+		stim4 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter4,stimWidth,1)
 
 		# Pick contrasts
 		logCRange = np.log10(cRange)
@@ -341,20 +351,20 @@ class Figures(object):
 		contrasts = 10**logContrasts
 
 		# Pick neuron to record
-		j = np.where(np.ravel(theta)==stimOrientation1)[0][0]
-		i = np.where(np.ravel(x)==stimCenter1)[0][0]
+		j = np.where(np.ravel(self.theta)==stimOrientation1)[0][0]
+		i = np.where(np.ravel(self.x)==RF_center)[0][0]
 
 		attCRF = np.zeros(np.size(contrasts))
 		unattCRF = np.zeros(np.size(contrasts))
 		for c in range(0,self.numContrasts):
 			stim = contrasts[c] * stim1 + fixed_contrast * stim2 + contrasts[c] * stim3 + fixed_contrast * stim4
 			# Population response when attending null stim in RF:
-			R1 = NMA.attention_model(x,theta,stim,Apeak=Apeak,
+			R1 = NMA.attention_model(self.x,self.theta,stim,Apeak=Apeak,
 				Ax=stimCenter2,AxWidth=AxWidth,
 				Atheta=stimOrientation2,AthetaWidth=AthetaWidth,
 				showActivityMaps=0,showModelParameters=0)
 			# Population response when attending null stim contralateral to RF:
-			R2 = NMA.attention_model(x,theta,stim,Apeak=Apeak,
+			R2 = NMA.attention_model(self.x,self.theta,stim,Apeak=Apeak,
 				Ax=stimCenter4,AxWidth=AxWidth,
 				Atheta=stimOrientation2,AthetaWidth=AthetaWidth,
 				showActivityMaps=0,showModelParameters=0)
@@ -382,11 +392,13 @@ class Figures(object):
 		plt.xlabel('Log contrast')
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figurer4C.pdf'))
+		plt.close()
 
 	def Figure4E(self,):
+		print 'creating Figure 4E'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 4C (Martinez-Trujillo & Treue, 2002)'
 		stimWidth = 5 
@@ -414,12 +426,12 @@ class Figures(object):
 		RF_center = round(np.mean([stimCenter1, stimCenter2]))
 
 		# Stim 1 and 2 in RF
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1)
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1)
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Stim 3 and 4 contralateral to RF
-		stim3 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter3,stimWidth,1)
-		stim4 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter4,stimWidth,1)
+		stim3 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter3,stimWidth,1)
+		stim4 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter4,stimWidth,1)
 
 		# Pick contrasts
 		logCRange = np.log10(cRange)
@@ -427,20 +439,20 @@ class Figures(object):
 		contrasts = 10**logContrasts
 
 		# Pick neuron to record
-		j = np.where(np.ravel(theta)==stimOrientation1)[0][0]
-		i = np.where(np.ravel(x)==stimCenter1)[0][0]
+		j = np.where(np.ravel(self.theta)==stimOrientation1)[0][0]
+		i = np.where(np.ravel(self.x)==RF_center)[0][0]
 
 		attCRF = np.zeros(np.size(contrasts))
 		unattCRF = np.zeros(np.size(contrasts))
 		for c in range(0,self.numContrasts):
 			stim = contrasts[c] * stim1 + contrasts[c] * stim2 + contrasts[c] * stim3 + contrasts[c] * stim4
 			# Population response when attending preferred stim in RF:
-			R1 = NMA.attention_model(x,theta,stim,Apeak=Apeak,
+			R1 = NMA.attention_model(self.x,self.theta,stim,Apeak=Apeak,
 				Ax=stimCenter1,AxWidth=AxWidth,
 				Atheta=stimOrientation1,AthetaWidth=AthetaWidth,
 				showActivityMaps=0,showModelParameters=0)
 			# Population response when attending null stim in RF:
-			R2 = NMA.attention_model(x,theta,stim,Apeak=Apeak,
+			R2 = NMA.attention_model(self.x,self.theta,stim,Apeak=Apeak,
 				Ax=stimCenter2,AxWidth=AxWidth,
 				Atheta=stimOrientation2,AthetaWidth=AthetaWidth,
 				showActivityMaps=0,showModelParameters=0)
@@ -468,11 +480,13 @@ class Figures(object):
 		plt.xlabel('Log contrast')
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figure4F.pdf'))
+		plt.close()
 
 	def Figure5C(self):
+		print 'creating Figure 5C'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 5C (McAdams and Maunsell, 1999)'
 		stimWidth = 10
@@ -487,40 +501,42 @@ class Figures(object):
 		stimOrientation1 = 0
 		stimCenter2 = -100
 		stimOrientation2 = 0
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1) 
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1) 
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Set contrast to 1 
 		contrast = 1
 		stim = contrast * stim1 * contrast + stim2
 
 		# Population response when attending stim 1
-		R1 = NMA.attention_model(x,theta,stim,Ax=stimCenter1,AxWidth=AxWidth)
+		R1 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter1,AxWidth=AxWidth)
 
 		# Population response when attending stim 2
-		R2 = NMA.attention_model(x,theta,stim,Ax=stimCenter2,AxWidth=AxWidth)
+		R2 = NMA.attention_model(self.x,self.theta,stim,Ax=stimCenter2,AxWidth=AxWidth)
 
 		# Pick RF center, record from neurons with that RF center and all
 		# different feature preferences (same as tuning curve from any one of those
 		# neurons).
-		i = np.where((np.ravel(x)==stimCenter1))[0][0]
+		i = np.where((np.ravel(self.x)==stimCenter1))[0][0]
 		attCRF = R1[:,i]
 		unattCRF = R2[:,i]
 		  
 		f = plt.figure(figsize=(7,7))
 		s = f.add_subplot(111)
-		plt.plot(theta,unattCRF)
-		plt.plot(theta,attCRF)
+		plt.plot(self.theta,unattCRF)
+		plt.plot(self.theta,attCRF)
 		plt.xlim([-180, 180])
 		plt.legend(['Att Away','Att RF'])
 		plt.title(titleString)
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figure5C.pdf'))
+		plt.close()
 
 	def Figure6C(self):
+		print 'creating Figure 6C'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 
 		titleString = 'Figure 6C (Martinez-Trujillo & Treue, 2004)'
 		stimWidth = 10 
@@ -537,43 +553,45 @@ class Figures(object):
 		stimOrientation1 = 0
 		stimCenter2 = -100
 		stimOrientation2 = 0
-		stim1 = NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1) 
-		stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		stim1 = NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1) 
+		stim2 = NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 
 		# Set contrast to 1 
 		contrast = 1  
 		stim = contrast * stim1 * contrast + stim2
 
 		# Population response when attending to fixation
-		R1 = NMA.attention_model(x,theta,stim,Ax=0,AxWidth=AxWidth)
+		R1 = NMA.attention_model(self.x,self.theta,stim,Ax=0,AxWidth=AxWidth)
 
 		# Population response when attending stim 2
-		R2 = NMA.attention_model(x,theta,stim,Ashape='cross',
+		R2 = NMA.attention_model(self.x,self.theta,stim,Ashape='cross',
 		  Ax=stimCenter2,AxWidth=AxWidth,
 		  Atheta=stimOrientation2,AthetaWidth=AthetaWidth)
 
 		# Pick RF center, record from neurons with that RF center and all
 		# different feature preferences (same as tuning curve from any one of those
 		# neurons).
-		i = np.where((np.ravel(x)==stimCenter1))[0][0]
+		i = np.where((np.ravel(self.x)==stimCenter1))[0][0]
 		attCRF = R1[:,i]
 		unattCRF = R2[:,i]
 		  
 		f = plt.figure(figsize=(7,7))
 		s = f.add_subplot(111)
-		plt.plot(theta,unattCRF)
-		plt.plot(theta,attCRF)
+		plt.plot(self.theta,unattCRF)
+		plt.plot(self.theta,attCRF)
 		plt.xlim([-180, 180])
 		plt.legend(['Att Away','Att RF'])
 		plt.title(titleString)
 		sn.despine(offset=10)
 		plt.tight_layout()
-
+		plt.savefig(os.path.join(self.plotdir,'Figure6C.pdf'))
+		plt.close()
 
 
 	def Figure7C(self):
+		print 'creating Figure 7C'
 
-		NMA = NormalizationModelofAttention()
+		NMA = NormalizationModelofAttention(self.plotdir)
 		titleString = 'Figure 7C (Treue & Martinez-Trujillo, 1999)'
 		stimWidth = 5 
 		AxWidth = 5
@@ -601,45 +619,45 @@ class Figures(object):
 		contrast = 1  
 
 		# Pick neuron to record
-		j = np.where(np.ravel(theta)==0)[0][0]
-		i = np.where(np.ravel(x)==RF_center)[0][0]
+		j = np.where(np.ravel(self.theta)==0)[0][0]
+		i = np.where(np.ravel(self.x)==RF_center)[0][0]
 
 		orientations = np.linspace(-180,180,self.numOrientations)
 		for stimOrientation1 in orientations:
 
 		  stimOrientation2 = 180
 
-		  stim1 = contrast * NMA.make_gaussian(theta,stimOrientation1,1,1) * NMA.make_gaussian(x,stimCenter1,stimWidth,1)
-		  stim2 = contrast * NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stimCenter2,stimWidth,1)
+		  stim1 = contrast * NMA.make_gaussian(self.theta,stimOrientation1,1,1) * NMA.make_gaussian(self.x,stimCenter1,stimWidth,1)
+		  stim2 = contrast * NMA.make_gaussian(self.theta,stimOrientation2,1,1) * NMA.make_gaussian(self.x,stimCenter2,stimWidth,1)
 		  pair = stim1 + stim2
 
 		  # Population response when attending stim 1 (varying stim)
-		  Pair_resp_att_var_pop = NMA.attention_model(x,theta,pair,Apeak=Apeak,
+		  Pair_resp_att_var_pop = NMA.attention_model(self.x,self.theta,pair,Apeak=Apeak,
 		    Ax=stimCenter1,AxWidth=AxWidth,
 		    Atheta=stimOrientation1,AthetaWidth=AthetaWidth)
 
 		  # Population response when attending stim 2 (null stim)
-		  Pair_resp_att_null_pop = NMA.attention_model(x,theta,pair,Apeak=Apeak,
+		  Pair_resp_att_null_pop = NMA.attention_model(self.x,self.theta,pair,Apeak=Apeak,
 		    Ax=stimCenter2,AxWidth=AxWidth,
 		    Atheta=stimOrientation2,AthetaWidth=AthetaWidth)
 
 		  # Population response when attending to fixation point
-		  Pair_resp_att_away_pop = NMA.attention_model(x,theta,pair,Apeak=Apeak,
+		  Pair_resp_att_away_pop = NMA.attention_model(self.x,self.theta,pair,Apeak=Apeak,
 		    Ax=att_away_loc,AxWidth=AxWidth,
 		    Atheta=np.nan)
 
 		  # Population response, attention to var presented alone
-		  Var_att_var_pop = NMA.attention_model(x,theta,stim1,Apeak=Apeak,
+		  Var_att_var_pop = NMA.attention_model(self.x,self.theta,stim1,Apeak=Apeak,
 		    Ax=stimCenter1,AxWidth=AxWidth,
 		    Atheta=stimOrientation1,AthetaWidth=AthetaWidth)
 
 		  # Population response, attention to null presented alone
-		  Null_att_null_pop = NMA.attention_model(x,theta,stim2,Apeak=Apeak,
+		  Null_att_null_pop = NMA.attention_model(self.x,self.theta,stim2,Apeak=Apeak,
 		    Ax=stimCenter2,AxWidth=AxWidth,
 		    Atheta=stimOrientation2,AthetaWidth=AthetaWidth)
 
 		  # Population response, attention away, var alone
-		  Var_att_away_pop = NMA.attention_model(x,theta,stim1,Apeak=Apeak,
+		  Var_att_away_pop = NMA.attention_model(self.x,self.theta,stim1,Apeak=Apeak,
 		    Ax=att_away_loc,AxWidth=AxWidth,
 		    Atheta=np.nan)
 
@@ -669,3 +687,5 @@ class Figures(object):
 		plt.title(titleString)
 		sn.despine(offset=10)
 		plt.tight_layout()
+		plt.savefig(os.path.join(self.plotdir,'Figure7C.pdf'))
+		plt.close()

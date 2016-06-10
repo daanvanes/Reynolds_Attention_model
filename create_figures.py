@@ -13,18 +13,23 @@ from IPython import embed as shell
 import seaborn as sn
 sn.set_style('ticks')
 from figures import *
+import os
 
-figs = Figures()
+res = 25
+plotdir = os.path.join('/home/vanes/Reynolds_model/Figures')
+if not os.path.isdir(plotdir):
+	os.mkdir(plotdir)
+
+figs = Figures(plotdir,res)
+
 
 # uncomment figure to create below:
-# figs.Figure2A() #works
-# figs.Figure2B() #works
-# figs.Figure3C() #works
-# figs.Figure3F() #works
-# figs.Figure4C() # totally off
-# figs.Figure4E() # % attentional modulation too high
-# figs.Figure5C() # works
-# figs.Figure6C() # works
-# figs.Figure7C() # works
-
-plt.show()
+figs.Figure2A()
+figs.Figure2B()
+figs.Figure3C()
+figs.Figure3F()
+figs.Figure4C() 
+figs.Figure4E() 
+figs.Figure5C()
+figs.Figure6C()
+figs.Figure7C()

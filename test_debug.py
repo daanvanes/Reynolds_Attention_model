@@ -15,7 +15,11 @@ AxWidth = 30
 Atheta = 0
 AthetaWidth = 60
 
-NMA = NormalizationModelofAttention()
+plotdir = os.path.join('/home/vanes/Reynolds_model/Figures')
+if not os.path.isdir(plotdir):
+	os.mkdir(plotdir)
+
+NMA = NormalizationModelofAttention(plotdir)
 
 # Sampling of space and orientation
 x = np.mat(np.arange(-200,201))
@@ -30,8 +34,8 @@ stim2 = NMA.make_gaussian(theta,stimOrientation2,1,1) * NMA.make_gaussian(x,stim
 stim = stim1 + stim2
 
 # Attending stim 1
-# R1 = NMA.attention_model(x,theta,stim,Ax=stimCenter1,AxWidth=AxWidth,
-#   showActivityMaps=1,showModelParameters=1)
+R1 = NMA.attention_model(x,theta,stim,Ax=stimCenter1,AxWidth=AxWidth,
+  showActivityMaps=1,showModelParameters=1)
 # # Attend orientation
 # R2 = NMA.attention_model(x,theta,stim,Atheta=Atheta,AthetaWidth=AthetaWidth,
 #   showActivityMaps=1,showModelParameters=1)

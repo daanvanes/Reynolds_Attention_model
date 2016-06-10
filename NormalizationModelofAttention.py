@@ -12,13 +12,14 @@ import matplotlib.pyplot as plt
 from IPython import embed as shell
 import seaborn as sn
 sn.set_style('ticks')
+import os
 
 
 class NormalizationModelofAttention(object):
 
-	# def __init__(self,):
+	def __init__(self,plotdir=np.nan):
 
-	# 	self.
+		self.plotdir = plotdir
 
 	def make_gaussian(self, space, center, width, heigth=np.nan):
 		if not np.isnan(heigth):
@@ -29,8 +30,10 @@ class NormalizationModelofAttention(object):
 
 	def conv_2_sep_Y_circ(self,image,xkernel,thetakernel):#,upsample=10):
 		# up_image = np.repeat(image,upsample)
-		x_convolved = ndimage.convolve1d(image,xkernel,mode='wrap',axis=1)
-		both_convolved = ndimage.convolve1d(x_convolved,thetakernel,mode='constant',axis=0)
+		# x_convolved = ndimage.convolve1d(image,xkernel,mode='mirror',axis=1)
+		# both_convolved = ndimage.convolve1d(x_convolved,thetakernel,mode='mirror',axis=0)
+		x_convolved = ndimage.convolve1d(image,xkernel,mode='constant',axis=1)
+		both_convolved = ndimage.convolve1d(x_convolved,thetakernel,mode='wrap',axis=0)
 		return both_convolved
 
 	def attention_model(self,x,theta,stimulus,ExWidth = 5,EthetaWidth = 60,IxWidth = 20,
@@ -143,7 +146,10 @@ class NormalizationModelofAttention(object):
 			plt.plot(np.ravel(theta),np.ravel(attnGainTheta),label='attnGainTheta')		  
 			plt.legend(loc='best')
 			sn.despine(offset=10)
+
 			plt.tight_layout()
+			plt.savefig(os.path.join(self.plotdir,'ModelParameters.pdf'))
+			plt.close()
 
 		if showActivityMaps == 1:
 			f = plt.figure(figsize=(7,7))
@@ -182,10 +188,13 @@ class NormalizationModelofAttention(object):
 			plt.title('Population response')
 			plt.xticks([])
 			plt.yticks([])
-			plt.tight_layout()
 
-		if (showActivityMaps + showModelParameters) > 0:
-			plt.show()
+			plt.tight_layout()
+			plt.savefig(os.path.join(self.plotdir,'ActivityMaps.pdf'))
+			plt.close()
+
+		# if (showActivityMaps + showModelParameters) > 0:
+		# 	plt.show()
 
 		return R
 
